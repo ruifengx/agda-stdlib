@@ -11,11 +11,12 @@ module Function.Properties.RightInverse where
 open import Function.Base using (id; _∘_)
 open import Function.Definitions using (Inverseˡ; Inverseʳ)
 open import Function.Bundles
-open import Function.Consequences using (inverseˡ⇒surjective)
+open import Function.Consequences using (inverseˡ⇒surjective; inverseʳ⇒injective)
 open import Level using (Level)
 open import Data.Product.Base using (_,_)
 open import Relation.Binary.Bundles using (Setoid)
 open import Relation.Binary.Structures using (IsEquivalence)
+open import Relation.Binary.PropositionalEquality as ≡ using (_≡_)
 
 private
   variable
@@ -70,6 +71,13 @@ RightInverse⇒Surjection I = record
 
 ↩⇒↪ : B ↩ A → A ↪ B
 ↩⇒↪ = LeftInverse⇒RightInverse
+
+↪⇒↣ : A ↪ B → A ↣ B
+↪⇒↣ I = record
+  { to = to
+  ; cong = to-cong
+  ; injective = inverseʳ⇒injective _≡_ to ≡.refl ≡.sym ≡.trans inverseʳ
+  } where open RightInverse I
 
 ------------------------------------------------------------------------
 -- Other
