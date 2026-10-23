@@ -8,7 +8,7 @@
 
 module Data.Maybe.Relation.Binary.Connected where
 
-open import Data.Maybe.Base using (Maybe; just; nothing)
+open import Data.Maybe.Base using (Maybe; just; nothing; zipWith)
 open import Function.Bundles using (_⇔_; mk⇔)
 open import Level using (Level; _⊔_)
 open import Relation.Binary.Core using (REL; _⇒_)
@@ -19,9 +19,10 @@ open import Relation.Nullary.Negation.Core using (¬_)
 
 private
   variable
-    a b ℓ : Level
-    A : Set a
-    B : Set b
+    a b c ℓ : Level
+    A A′ : Set a
+    B B′ : Set b
+    C C′ : Set c
     R S T : REL A B ℓ
     x y : A
 
@@ -37,6 +38,14 @@ data Connected {A : Set a} {B : Set b} (R : REL A B ℓ)
 
 ------------------------------------------------------------------------
 -- Properties
+
+nothing-any : (m : Maybe A) → Connected R nothing m
+nothing-any nothing  = nothing
+nothing-any (just x) = nothing-just
+
+any-nothing : (m : Maybe A) → Connected R m nothing
+any-nothing nothing  = nothing
+any-nothing (just x) = just-nothing
 
 drop-just : Connected R (just x) (just y) → R x y
 drop-just (just p) = p
@@ -66,3 +75,23 @@ connected? R? (just x) nothing  = yes just-nothing
 connected? R? nothing  (just y) = yes nothing-just
 connected? R? nothing  nothing  = yes nothing
 
+------------------------------------------------------------------------
+-- Introduction (⁺) and elimination (⁻) rules for maybe operations
+------------------------------------------------------------------------
+
+-- zipWith
+
+zipWith⁺
+  : ∀ {f : A → B → C} {g : A′ → B′ → C′}
+  → (∀ {x x′ y y′} → R x x′ → S y y′ → T (f x y) (g x′ y′))
+  → ∀ {mx my mx′ my′}
+  → Connected R mx mx′
+  → Connected S my my′
+  → Connected T (zipWith f mx my) (zipWith g mx′ my′)
+zipWith⁺ h (just x)     (just y)     = just (h x y)
+zipWith⁺ h (just x)     just-nothing = just-nothing
+zipWith⁺ h (just x)     nothing-just = nothing-just
+zipWith⁺ h (just x)     nothing      = nothing
+zipWith⁺ h just-nothing _            = any-nothing _
+zipWith⁺ h nothing-just _            = nothing-any _
+zipWith⁺ h nothing      _            = nothing

@@ -8,7 +8,7 @@
 
 module Data.Maybe.Relation.Unary.All.Properties where
 
-open import Data.Maybe.Base using (Maybe; just; nothing; map; _<∣>_)
+open import Data.Maybe.Base using (Maybe; just; nothing; map; zipWith; _<∣>_)
 open import Data.Maybe.Relation.Unary.All as All
   using (All; nothing; just)
 open import Data.Maybe.Relation.Binary.Connected
@@ -21,11 +21,13 @@ open import Relation.Binary.Core using (Rel)
 
 private
   variable
-    a b p q ℓ : Level
+    a b c p q r ℓ : Level
     A : Set a
     B : Set b
+    C : Set c
     P : Pred A p
     Q : Pred B q
+    R : Pred C r
 
 ------------------------------------------------------------------------
 -- Relationship with other combinators
@@ -58,6 +60,15 @@ map⁻ {mx = nothing} nothing   = nothing
 
 gmap : ∀ {f : A → B} → P ⊆ Q ∘ f → All P ⊆ All Q ∘ map f
 gmap g = map⁺ ∘ All.map g
+
+-- zipWith
+
+zipWith⁺ : ∀ {f : A → B → C} {mx} {my}
+  → (∀ {x} {y} → P x → Q y → R (f x y))
+  → All P mx → All Q my → All R (zipWith f mx my)
+zipWith⁺ h nothing  v        = nothing
+zipWith⁺ h (just x) nothing  = nothing
+zipWith⁺ h (just x) (just y) = just (h x y)
 
 ------------------------------------------------------------------------
 -- _<∣>_
